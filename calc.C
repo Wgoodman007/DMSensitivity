@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     double Ewin = 25 ;        // energy window in keVee
 
     // Arguments: Target, IsSpinIndependent, mode of event rate
-    DMCalc* deap= new DMCalc("Ar", "", 4);
+    DMCalc* deap= new DMCalc("Ar", "", 3);
 //    DMCalc* deap2= new DMCalc("Xe", "", 4);
 
     double wimpmass[1000] ;

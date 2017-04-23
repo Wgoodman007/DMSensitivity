@@ -105,7 +105,8 @@ double DMCalc::dRdEr(double m_w, double Er) {
 double DMCalc::dRdEr0inf(double m_w, double Er) {
     double R0= 2*Avogadro*rho0*sigma0(m_w)*v0/TMath::Sqrt(TMath::Pi())/A/m_w;
     double r= 4*m_w*m_N/(m_w+m_N)/(m_w+m_N);
-    double E0= m_w*v0*v0*c2/2;
+    double E0 = (0.5*(m_w*c2*1.79e-36)*(v0/100)*(v0/100))/(1.609e-19);
+//    double E0= m_w*v0*v0*c2/2;
     double tmp_dRdEr0inf= R0*TMath::Exp(-Er/E0/r)/E0/r;
 
     return tmp_dRdEr0inf;
@@ -115,7 +116,8 @@ double DMCalc::dRdEr0esc(double m_w, double Er) {
     double k1_k0= TMath::Erf(v_esc/v0)-2*v_esc*TMath::Exp(-v_esc*v_esc/v0/v0)/TMath::Sqrt(TMath::Pi())/v0;
     double R0= 2*Avogadro*rho0*sigma0(m_w)*v0/TMath::Sqrt(TMath::Pi())/A/m_w;
     double r= 4*m_w*m_N/(m_w+m_N)/(m_w+m_N);
-    double E0= m_w*v0*v0*c2/2;
+    double E0 = (0.5*(m_w*c2*1.79e-36)*(v0/100)*(v0/100))/(1.609e-19);
+//    double E0= m_w*v0*v0*c2/2;
     double tmp_dRdEr0esc= (dRdEr0inf(m_w, Er) - R0*TMath::Exp(-v_esc*v_esc/v0/v0)/E0/r)/k1_k0;
 
     return tmp_dRdEr0esc;
@@ -138,7 +140,8 @@ double DMCalc::dRdEreesc(double m_w, double Er) {
     double k1_k0= TMath::Erf(v_esc/v0)-2*v_esc*TMath::Exp(-v_esc*v_esc/v0/v0)/TMath::Sqrt(TMath::Pi())/v0;
     double R0= 2*Avogadro*rho0*sigma0(m_w)*v0/TMath::Sqrt(TMath::Pi())/A/m_w;
     double r= 4*m_w*m_N/(m_w+m_N)/(m_w+m_N);
-    double E0= m_w*v0*v0*c2/2;
+    double E0 = (0.5*(m_w*c2*1.79e-36)*(v0/100)*(v0/100))/(1.609e-19);
+//    double E0= m_w*v0*v0*c2/2;
     double tmp_dRdEreesc= (dRdEreinf(m_w, Er) - R0*TMath::Exp(-v_esc*v_esc/v0/v0)/E0/r)/k1_k0;
 
     return tmp_dRdEreesc;
