@@ -4,7 +4,6 @@
 #include "TCanvas.h"
 #include "TApplication.h"
 #include "TGraph.h"
-#include "TF1.h"
 #include "DMCalc.h"
 
 using namespace std;
@@ -21,7 +20,7 @@ int main(int argc, char** argv) {
     double Ethresh = 15 ; // energy threshold in keVee
     double Ewin = 25 ; // energy window in keVee
 
-    DMCalc* deap= new DMCalc();
+    DMCalc* deap= new DMCalc("Xe");
 
     double wimpmass[1000] ;
     double wimpcsc[1000] ;
@@ -31,7 +30,6 @@ int main(int argc, char** argv) {
     // WIMP recoil energy distribution (keVr)
     TH1D* DiffSpec= new TH1D("DiffSpec", "Differential spectrum", 500, 0, 500); 
     for (double i= 0; i<= 4.2; i+=0.1) {
-        cout << n << endl;
         wimpmass[n]= TMath::Power(10, i);
         double m_w= TMath::Power(10, i)*1e9/c2;
         teff->Reset(); // reset for each mass loop

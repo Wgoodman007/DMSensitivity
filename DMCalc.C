@@ -1,21 +1,36 @@
 #include <iostream>
+#include <map>
+#include <string>
 #include "TMath.h"
 #include "DMCalc.h"
-#include "TF1.h"
 
-DMCalc::DMCalc() {
+DMCalc::DMCalc(const char* Material="Ar") {
     // initialization
-    c       = 2.99792458e10;
+    const int mattypes= 2;
+    std::string mat[mattypes]= {"Ar", "Xe"};
+    double tmp_A[mattypes]= {40, 139};
+    for (int i= 0; i< mattypes; ++i) {
+        matdb[mat[i]]= tmp_A[i];
+    }
+    if ( matdb[Material]==0 ) {
+        std::cout << "WARNING: Undefined material: " << Material << std::endl;
+        std::cout << "Set to default material 'Ar40'." << std::endl;
+        A= 40;
+    } else {
+        std::cout << "Target material: " << Material << std::endl;
+        A= matdb[Material];
+    }
+
+    c       = 2.99792458e10;// speed of light
     c2      = c*c;      
     Avogadro= 6.0221413e23; // Avogadro number
-    A       = 40;           // atomic mass of the target: AMU
     rho0    = 0.3e9/c2;     // dark matter particle density: eV/c2/cm3
     v0      = 2.2e7;        // cm/s
     sigma_n = 1e-42;        // WIMP-nucleon cross section
     m_N     = A*9.315e8/c2; // eV/c2
     m_n     = 9.315e8/c2;   // eV/c2
     v_esc   = 6e7;          // escape velocity: cm/s
-    v_e     = 2.44e7;        // velocity of earth: cm/s
+    v_e     = 2.44e7;       // velocity of earth: cm/s
 }
 
 DMCalc::~DMCalc() {

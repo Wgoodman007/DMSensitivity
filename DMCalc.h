@@ -1,10 +1,11 @@
 #ifndef DMCALC_H
 #define DMCALC_H
-#include "TF1.h"
+#include <map>
+#include <string>
 
 class DMCalc {
     public:
-        DMCalc();
+        DMCalc(const char* Material);
         ~DMCalc();
 
         double sigma0(double m_w);
@@ -22,13 +23,14 @@ class DMCalc {
         double rho0;
         double sigma_n;
         double v0;
-        double A;
         double m_w;
         double m_N;
         double m_n;
         double v_esc;
         double v_e;
         double quench;
+        double A;
+        std::map<std::string, double> matdb;
 };
 
 #endif
