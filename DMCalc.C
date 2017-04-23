@@ -4,11 +4,11 @@
 #include "TMath.h"
 #include "DMCalc.h"
 
-DMCalc::DMCalc(const char* Material="Ar") {
+DMCalc::DMCalc(const char* Material="Ar", bool IsSI=kTRUE, int RateMode=4) {
     // initialization
     const int mattypes= 2;
     std::string mat[mattypes]= {"Ar", "Xe"};
-    double tmp_A[mattypes]= {40, 139};
+    double tmp_A[mattypes]= {40, 132};
     for (int i= 0; i< mattypes; ++i) {
         matdb[mat[i]]= tmp_A[i];
     }
@@ -20,6 +20,7 @@ DMCalc::DMCalc(const char* Material="Ar") {
         std::cout << "Target material: " << Material << std::endl;
         A= matdb[Material];
     }
+    IsSpinIndependent= IsSI;
 
     c       = 2.99792458e10;// speed of light
     c2      = c*c;      
@@ -31,17 +32,74 @@ DMCalc::DMCalc(const char* Material="Ar") {
     m_n     = 9.315e8/c2;   // eV/c2
     v_esc   = 6e7;          // escape velocity: cm/s
     v_e     = 2.44e7;       // velocity of earth: cm/s
+
+    mode= RateMode;
+    switch(mode) {
+        case 1:
+            std::cout << "mode 1: V_earth=0, V_escape=inf." << std::endl;
+            break;
+        case 2:
+            std::cout << "mode 2: V_earth=0, V_escape=" <<  v_esc << " cm/s." << std::endl;
+            break;
+        case 3:
+            std::cout << "mode 3: V_earth=" << v_e << " cm/s, V_escape=inf." << std::endl;
+            break;
+        case 4:
+            std::cout << "mode 4: V_earth=" << v_e << " cm/s, V_escape=" << v_esc << " cm/s." << std::endl;
+            break;
+        default:
+            std::cout << "WARNING: Undefined mode " << mode << std::endl;
+            std::cout << "Set to mode 4: " << "V_earth=" << v_e << ", V_escape=" << v_esc << std::endl;
+    }
 }
 
 DMCalc::~DMCalc() {
 }
 
 double DMCalc::sigma0 (double m_w) {
-    double mu_N= m_w*m_N/(m_w + m_N);
-    double mu_n= m_w*m_n/(m_w + m_n);
-    double tmp_sigma0= sigma_n*mu_N*mu_N*A*A/mu_n/mu_n;
+    double tmp_sigma0;
+    if (IsSpinIndependent) {
+        double mu_N= m_w*m_N/(m_w + m_N);
+        double mu_n= m_w*m_n/(m_w + m_n);
+        tmp_sigma0= sigma_n*mu_N*mu_N*A*A/mu_n/mu_n;
+    } else {
+        tmp_sigma0= 0;
+    }
 
     return tmp_sigma0;
+}
+
+double DMCalc::FormFactor(double Er) {
+    double tmp_F;
+    // The SI form factor is essentially a Fourier transform of the mass distribution of the nucleus. A reasonably accurate approximation is the Helm form factor
+    if (IsSpinIndependent) {
+        // q(MeVc^-1)=[2*0.932(GeVc^-2)AEr(keV)]^0.5, hbarc=197.3MeVfm
+        // qr(dimensionless)= 6.92e-3*sqrt(A*Er)(a*A^1/3+b) approxi. equal to 6.92e-3*sqrt(A*Er)(1.14*A^1/3)
+        // Er in keV, a/b in fm
+        double qr =6.92e-3*TMath::Sqrt(A*Er/1000.)*(1.14*TMath::Power(A,1.0/3.0));
+        double qs =6.92e-3*TMath::Sqrt(A*Er/1000.)*0.9;
+        tmp_F= 3*(TMath::Sin(qr)/(qr*qr*qr)-TMath::Cos(qr)/(qr*qr))*TMath::Exp(-qs*qs/2);
+    } else {
+        tmp_F= 0;
+    }
+
+    return tmp_F;
+}
+
+double DMCalc::dRdEr(double m_w, double Er) {
+    double F= FormFactor(Er);
+    switch(mode) {
+        case 1: 
+            return F*F*dRdEr0inf(m_w, Er);
+        case 2:
+            return F*F*dRdEr0esc(m_w, Er);
+        case 3:
+            return F*F*dRdEreinf(m_w, Er);
+        case 4:
+            return F*F*dRdEreesc(m_w, Er);
+        default:
+            return F*F*dRdEreesc(m_w, Er);
+    }
 }
 
 double DMCalc::dRdEr0inf(double m_w, double Er) {
@@ -84,14 +142,6 @@ double DMCalc::dRdEreesc(double m_w, double Er) {
     double tmp_dRdEreesc= (dRdEreinf(m_w, Er) - R0*TMath::Exp(-v_esc*v_esc/v0/v0)/E0/r)/k1_k0;
 
     return tmp_dRdEreesc;
-}
-
-double DMCalc::FormFactor(double Er) {
-     double qr =6.92e-3*TMath::Sqrt(A*Er/1000.)*(1.14*TMath::Power(A,1.0/3.0));
-     double qs =6.92e-3*TMath::Sqrt(A*Er/1000.)*0.9;
-     double tmp_F= 3*(TMath::Sin(qr)/(qr*qr*qr)-TMath::Cos(qr)/(qr*qr))*TMath::Exp(-qs*qs/2);
-
-     return tmp_F;
 }
 
 double DMCalc::DetResponse(double Evis, double Er) {
